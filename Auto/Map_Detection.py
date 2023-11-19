@@ -10,49 +10,58 @@ from PIL import Image
 import os
 import streamlit as st
 
+# A_03: Import user defined libraries
+from Library_Directory import create_stremlit_folder, create_folder
+from Library_Image import read_image, detect_edges, detect_lines, create_blank_image
+from Library_Streamlit import save_uploaded_image, display_images_in_directory
+
 # A_03: Import configuration variables
 # import config
 
-def create_folder(dir_folder):
-    # Check if the folder exists
-    if not os.path.exists(dir_folder):
-        # If it doesn't exist, create it
-        os.makedirs(dir_folder)
-    else:
-        print(f"Folder '{dir_folder}' already exists.")
+path_upload="./Auto/Uploads"
+image = Image.open('./Auto/Source/header_ultratech.png')
 
-path_folder="/Upload"
-print("################")
-create_folder(path_folder)
-
-print("wd")
-print(os.getcwd())
-print("################")
-
-
-# Function to save the uploaded image
-def save_uploaded_image(uploaded_image, folder_path):
-    image = Image.open(uploaded_image)
-    image.save(os.path.join(folder_path, uploaded_image.name))
-
-# Function to display multiple images vertically
-def display_images_in_directory(directory):
-    image_files = os.listdir(directory)
-    for image_file in image_files:
-        print("displaying: ")
-        print(os.path.join(directory, image_file))
-        st.image(os.path.join(directory, image_file), use_column_width=True, caption=image_file)
-
+st.image(image, caption='')
 st.title("Map Detection")
 
-
 # Upload an image and save it to the "uploads" folder
-uploaded_image = st.file_uploader("Upload an image for OCR", type=["jpg", "png", "jpeg"])
+uploaded_image = st.file_uploader("Upload an image", type=["jpg", "png", "jpeg"])
+
 if uploaded_image is not None:
-    save_uploaded_image(uploaded_image, path_folder)
+
+    folder_path = None
+    if folder_path is None:
+        folder_path = path_upload + "/" + create_stremlit_folder(base_directory=path_upload)
+
+    save_uploaded_image(uploaded_image, folder_path)
 
     # # Introduce a 10-second delay (if needed)
     time.sleep(10)
 
-    display_images_in_directory(path_folder)
+    # Displaying Image
+    st.subheader('Uploaded Image', divider='orange')
+    display_images_in_directory(folder_path, image_name="Raw.png")
+
+    # Processing image
+    # Step 01: Reading Image
+    image_raw = read_image(dir_ip=folder_path,image_name="Raw.png")
+    # display_images_in_directory(folder_path, image_name="Raw.png")
+
+    # Step 02: Detecting Edges
+    st.subheader('Detected Edges', divider='orange')
+    image_edges = detect_edges(image=image_raw, dir_op=folder_path)
+    display_images_in_directory(folder_path, image_name="Edges.png")
+
+    # Step 03: Detecting Lines
+    st.subheader('Detected Map', divider='orange')
+    image_map = detect_lines(image_edges=image_edges, image_raw=image_raw, dir_op=folder_path, line_color=(0, 165, 255), is_on_blank=False)
+    display_images_in_directory(folder_path, image_name="Lines.png")
+
+    # Step 04: Detecting Lines
+    st.subheader('Extracted Map', divider='orange')
+    image_map = detect_lines(image_edges=image_edges, image_raw=image_raw, dir_op=folder_path, line_color=(0, 165, 255), is_on_blank=True)
+    display_images_in_directory(folder_path, image_name="Lines2.png")
+
+
+
 

@@ -9,7 +9,7 @@ def create_folder(dir_folder):
         print(f"Folder '{dir_folder}' already exists.")
 
 path_prj = "C:/Users/Xtage/OneDrive - Xtage Technologies Private Limited/UTec - Map Detection"
-prj_id = "011" + "_Sample_Maps"
+prj_id = "006" + "_Sample_Maps"
 dir_ip = path_prj + "/" +"Input"
 dir_op = path_prj + "/" +"Output"
 
