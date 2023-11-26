@@ -12,7 +12,8 @@ import streamlit as st
 
 # A_03: Import user defined libraries
 from Library_Directory import create_stremlit_folder, create_folder
-from Library_Image import read_image, detect_edges, detect_lines, create_blank_image
+from Library_Image import read_image, detect_edges, detect_lines, create_blank_image, get_horizontal_lines, get_vertical_lines, plot_lines
+from Library_Image import get_horizontal_lines, get_vertical_lines, correct_image
 from Library_Streamlit import save_uploaded_image, display_images_in_directory
 
 # A_03: Import configuration variables
@@ -36,7 +37,7 @@ if uploaded_image is not None:
     save_uploaded_image(uploaded_image, folder_path)
 
     # # Introduce a 10-second delay (if needed)
-    time.sleep(10)
+    time.sleep(2)
 
     # Displaying Image
     st.subheader('Uploaded Image', divider='orange')
@@ -54,14 +55,18 @@ if uploaded_image is not None:
 
     # Step 03: Detecting Lines
     st.subheader('Detected Map', divider='orange')
-    image_map = detect_lines(image_edges=image_edges, image_raw=image_raw, dir_op=folder_path, line_color=(0, 165, 255), is_on_blank=False)
+    lines, image_map = detect_lines(image_edges=image_edges, image_raw=image_raw, dir_op=folder_path, line_color=(0, 165, 255), is_on_blank=False)
     display_images_in_directory(folder_path, image_name="Lines.png")
 
     # Step 04: Detecting Lines
     st.subheader('Extracted Map', divider='orange')
-    image_map = detect_lines(image_edges=image_edges, image_raw=image_raw, dir_op=folder_path, line_color=(0, 165, 255), is_on_blank=True)
-    display_images_in_directory(folder_path, image_name="Lines2.png")
+    lines_extrcated, image_extracted = detect_lines(image_edges=image_edges, image_raw=image_raw, dir_op=folder_path, line_color=(0, 165, 255), is_on_blank=True)
+    display_images_in_directory(folder_path, image_name="Extracted.png")
 
+    # Step 05: Corrcet Lines
+    st.subheader('Corrected Map', divider='orange')
+    image_corrected = correct_image(lines=lines_extrcated, image=image_extracted, dir_ip=folder_path, dir_op=folder_path, verbose=False)
+    display_images_in_directory(folder_path, image_name="Corrected.png")
 
 
 
