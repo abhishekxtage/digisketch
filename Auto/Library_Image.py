@@ -88,14 +88,70 @@ def get_vertical_lines(lines, threshold, verbose=False):
 
     return vertical_lines
 
-def plot_lines(image=None, lines=None):
+
+def calculate_intersection(rect1, rect2):
+    # Extract coordinates from the format [x1, y1, x2, y2]
+    x1_1, y1_1, x2_1, y2_1 = rect1
+    x1_2, y1_2, x2_2, y2_2 = rect2
+
+    # Calculate intersection rectangle coordinates
+    x_intersect = max(x1_1, x1_2)
+    y_intersect = max(y1_1, y1_2)
+    w_intersect = min(x2_1, x2_2) - x_intersect
+    h_intersect = min(y2_1, y2_2) - y_intersect
+
+    # Check if there is an intersection
+    if w_intersect > 0 and h_intersect > 0:
+        return [x_intersect, y_intersect, x_intersect + w_intersect, y_intersect + h_intersect]
+    else:
+        return None
+    
+def plot_lines(image=None, lines=None, type="1d", lines_h=None, lines_v=None, fill_rectangle=True, draw_corners=True, rectangle_width=5):
     if image is None:
         return "image not found"
     blank_image = create_blank_image(image)
 
-    for index, line in enumerate(lines):
-        # print(line)
-        cv2.line(blank_image, (line[0], line[1]), (line[2], line[3]), (0, 0, 0), 1, cv2.LINE_AA)
+    if type == "1d":
+        for index, line in enumerate(lines):
+            # print(line)
+            cv2.line(blank_image, (line[0], line[1]), (line[2], line[3]), (0, 0, 0), 1, cv2.LINE_AA)
+    if type == "2d":
+        if fill_rectangle:
+            rectangles = []
+        for index, line in enumerate(lines_h):    
+            # print(line)
+            cv2.line(blank_image, (line[0], line[1]), (line[2], line[3]), (0, 0, 0), 2, cv2.LINE_AA)
+            cv2.line(blank_image, (line[0], line[1]-rectangle_width), (line[2], line[3]-rectangle_width), (0, 0, 0), 2, cv2.LINE_AA)
+            cv2.line(blank_image, (line[0], line[1]), (line[0], line[1]-rectangle_width), (0, 0, 0), 2, cv2.LINE_AA)
+            cv2.line(blank_image, (line[2], line[3]), (line[2], line[3]-rectangle_width), (0, 0, 0), 2, cv2.LINE_AA)
+            if fill_rectangle:
+                # Draw and fill the rectangle on the image
+                rectangles.append([line[0], line[1]-rectangle_width, line[2], line[3]])
+                cv2.rectangle(blank_image, (line[0], line[1]-rectangle_width), (line[2], line[3]), (169, 169, 169), thickness=cv2.FILLED)
+
+        for index, line in enumerate(lines_v):    
+            # print(line)
+            cv2.line(blank_image, (line[0], line[1]), (line[2], line[3]), (0, 0, 0), 2, cv2.LINE_AA)
+            cv2.line(blank_image, (line[0]-rectangle_width, line[1]), (line[2]-rectangle_width, line[3]), (0, 0, 0), 2, cv2.LINE_AA)
+            cv2.line(blank_image, (line[0], line[1]), (line[0]-rectangle_width, line[1]), (0, 0, 0), 2, cv2.LINE_AA)
+            cv2.line(blank_image, (line[2], line[3]), (line[2]-rectangle_width, line[3]), (0, 0, 0), 2, cv2.LINE_AA)
+            if fill_rectangle:
+                rectangles.append([line[0]-10, line[1], line[2], line[3]])
+                # Draw and fill the rectangle on the image
+                cv2.rectangle(blank_image, (line[0]-rectangle_width, line[1]), (line[2], line[3]), (169, 169, 169), thickness=cv2.FILLED)
+
+        if draw_corners:
+            # identifying intersecing rectangles:
+            intersecting_rectangles = []
+
+            for i in range(len(rectangles)):
+                for j in range(i + 1, len(rectangles)):
+                    intersection = calculate_intersection(rectangles[i], rectangles[j])
+                    if intersection:
+                        intersecting_rectangles.append(intersection)
+                        x1, y1, x2, y2 = intersection
+                        cv2.rectangle(blank_image, (x1, y1), (x2, y2), (0, 0, 0), thickness=cv2.FILLED)
+
 
     return blank_image    
 
@@ -173,19 +229,21 @@ def correct_image(lines=None, image=None, dir_ip=None, dir_op=None, verbose=Fals
     print("step 03: grouping horizontal lines")
     grouped_lines_horizontal, grouped_lines_horizontal_max, horizontal_lines_first_adjusted = \
     group_horizontal_lines(lines=horizontal_lines, threshold=10)
-    image_horizontal_lines_grouped = plot_lines(image=image.copy(), lines=horizontal_lines_first_adjusted)
+    image_horizontal_lines_grouped = plot_lines(image=image.copy(), lines=horizontal_lines_first_adjusted, type="1d")
     # plt.imshow(image_horizontal_lines_grouped)
 
     print("step 04: grouping vertical lines")
     grouped_lines_vertical, grouped_lines_vertical_max, vertical_lines_first_adjusted = \
         group_vertical_lines(lines=vertical_lines, threshold=20)
-    image_vertical_lines_grouped = plot_lines(image=image.copy(), lines=vertical_lines_first_adjusted)
+    image_vertical_lines_grouped = plot_lines(image=image.copy(), lines=vertical_lines_first_adjusted, type="1d")
     # plt.imshow(image_vertical_lines_grouped)
 
     print("step 05: consolidating lines")
     consolidated_lines = horizontal_lines_first_adjusted.copy()
     consolidated_lines.extend(vertical_lines_first_adjusted)
-    image_lines_grouped = plot_lines(image = image.copy(), lines = consolidated_lines)
+    # image_lines_grouped = plot_lines(image = image.copy(), lines = consolidated_lines)
+    image_lines_grouped = plot_lines(image = image.copy(), lines = None, lines_h=horizontal_lines_first_adjusted, lines_v=vertical_lines_first_adjusted, type="2d", fill_rectangle=True, draw_corners=True)
+
     if verbose:
         plt.imshow(image_lines_grouped)
 
@@ -193,3 +251,5 @@ def correct_image(lines=None, image=None, dir_ip=None, dir_op=None, verbose=Fals
     cv2.imwrite(dir_op + "/" + "Corrected.png", image_lines_grouped)
 
     return image_lines_grouped
+
+# def get_border_lines()

@@ -5,6 +5,7 @@ import time
 from datetime import datetime
 from matplotlib import pyplot as plt
 from PIL import Image
+import cv2
 
 # A_02: Import python libraries 
 import os
@@ -46,6 +47,10 @@ if uploaded_image is not None:
     # Processing image
     # Step 01: Reading Image
     image_raw = read_image(dir_ip=folder_path,image_name="Raw.png")
+    # Apply Gaussian blur
+    # ksize = (5, 5)  # Adjust the kernel size according to your needs
+    # sigmaX = 0      # Adjust the standard deviation if needed
+    # image_raw = cv2.GaussianBlur(image_raw, ksize, sigmaX)
     # display_images_in_directory(folder_path, image_name="Raw.png")
 
     # Step 02: Detecting Edges
