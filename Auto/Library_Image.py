@@ -88,7 +88,6 @@ def get_vertical_lines(lines, threshold, verbose=False):
 
     return vertical_lines
 
-
 def calculate_intersection(rect1, rect2):
     # Extract coordinates from the format [x1, y1, x2, y2]
     x1_1, y1_1, x2_1, y2_1 = rect1
@@ -136,7 +135,7 @@ def plot_lines(image=None, lines=None, type="1d", lines_h=None, lines_v=None, fi
             cv2.line(blank_image, (line[0], line[1]), (line[0]-rectangle_width, line[1]), (0, 0, 0), 2, cv2.LINE_AA)
             cv2.line(blank_image, (line[2], line[3]), (line[2]-rectangle_width, line[3]), (0, 0, 0), 2, cv2.LINE_AA)
             if fill_rectangle:
-                rectangles.append([line[0]-10, line[1], line[2], line[3]])
+                rectangles.append([line[0]-rectangle_width, line[1], line[2], line[3]])
                 # Draw and fill the rectangle on the image
                 cv2.rectangle(blank_image, (line[0]-rectangle_width, line[1]), (line[2], line[3]), (169, 169, 169), thickness=cv2.FILLED)
 
@@ -251,5 +250,3 @@ def correct_image(lines=None, image=None, dir_ip=None, dir_op=None, verbose=Fals
     cv2.imwrite(dir_op + "/" + "Corrected.png", image_lines_grouped)
 
     return image_lines_grouped
-
-# def get_border_lines()
