@@ -1,0 +1,2 @@
+@echo on
+"C:\Users\Xtage\OneDrive - Xtage Technologies Private Limited\UTec - Map Detection\Scripts\activate.bat" "C:\Users\Xtage\OneDrive - Xtage Technologies Private Limited\UTec - Map Detection\" & streamlit run "C:\Users\Xtage\OneDrive - Xtage Technologies Private Limited\UTec - Map Detection\Auto\App_Map_Detection.py" --server.port 8505
